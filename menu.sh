@@ -13,6 +13,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
 LAST_SOURCEDB=tiomila2025
 LAST_BACKUP_FILE=/home/user/backups/tiomila2025_auto_2026-03-19T200000Z.sql
 BACKUP_DIR=/home/user/backups
+PRIMARY_HOST=192.168.1.21
 SECONDARY_HOST=192.168.1.22
 SECONDARY_USER=user
 SECONDARY_PATH=/home/user/backups
@@ -35,9 +36,10 @@ timer_status() {
 }
 
 show_menu() {
-    local ab_status ul_status
+    local ab_status ul_status db_target
     ab_status=$(timer_status 10mila-autobackup.timer)
     ul_status=$(timer_status 10mila-autoupload-secondary.timer)
+    db_target=$("$SCRIPT_DIR/scripts/14_switch_mysql_target.sh" status 2>/dev/null)
     clear
     echo "=============================================="
     echo "   10mila Operations Menu"
@@ -47,6 +49,7 @@ show_menu() {
     echo "  SERVICE"
     echo "   1.  Start  ola10mila service"
     echo "   2.  Stop   ola10mila service"
+    echo "  14.  Switch OLA database: local / server01    [${db_target}]"
     echo ""
     echo "  BACKUP"
     echo "   3.  Create database snapshot/backup"
@@ -105,6 +108,7 @@ while true; do
         11) run_script "11_disable_autostart.sh" ;;
         12) run_script "12_enable_autoupload_secondary.sh" ;;
         13) run_script "13_disable_autoupload_secondary.sh" ;;
+        14) run_script "14_switch_mysql_target.sh" ;;
         20) run_script "20_service_status.sh" ;;
         21) run_script "21_show_logs.sh" ;;
         22) run_script "22_mysql_status.sh" ;;
