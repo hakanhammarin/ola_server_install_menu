@@ -227,9 +227,13 @@ echo "  Restore SUCCESSFUL."
 echo ""
 echo "--- Step 6: Configuring replication ---"
 
+# The replication heartbeat (replicate.sh) writes one row into replmon on the source every minute. The dump holds
+# only the OLA database, so a fresh standby needs that table before replication starts, or the first heartbeat stops it.
 REPL_SQL=$(cat <<EOF
 STOP REPLICA;
 RESET REPLICA ALL;
+CREATE DATABASE IF NOT EXISTS replmon;
+CREATE TABLE IF NOT EXISTS replmon.replicamonitoring (k VARCHAR(32) PRIMARY KEY, v DATETIME(3) NOT NULL);
 CHANGE REPLICATION SOURCE TO
   SOURCE_HOST='$SRC_HOST',
   SOURCE_PORT=$SRC_PORT,

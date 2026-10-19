@@ -11,7 +11,7 @@ CONFIG_FILE="$HOME/.10mila_menu.conf"
 
 if [ ! -f "$CONFIG_FILE" ]; then
     cat > "$CONFIG_FILE" <<CONF
-LAST_SOURCEDB=tiomila2026
+LAST_SOURCEDB=tiomilaprod
 LAST_BACKUP_FILE=
 BACKUP_DIR=$HOME/backups
 DB_USER=root
@@ -49,6 +49,8 @@ show_menu() {
     echo "  RESTORE ON THIS SERVER (overwrites the database)"
     echo "  41.  Restore database from a backup"
     echo "  42.  Restore and start replication from a source"
+    echo "  43.  Upload golden database (web page)   44.  Restore golden into ${GOLDEN_DB:-tiomilaprod}"
+    echo "  45.  Unlock golden restore (web page, PIN)"
     echo ""
     echo "  DATABASE ROLE"
     echo "  51.  OLA uses local MySQL      52.  OLA uses server01"
@@ -81,6 +83,8 @@ while true; do
         35) run 30_send_backup.sh util ;;
         36) run 36_enable_autopush.sh ;;      37) run 37_disable_autopush.sh ;;
         41) run 41_restore_db.sh ;;           42) run 42_restore_and_replicate.sh ;;
+        43) run 43_golden_status.sh ;;        44) run 44_restore_golden.sh ;;
+        45) run 43_golden_status.sh ;;
         51) run 50_switch_mysql_target.sh local ;;    52) run 50_switch_mysql_target.sh server01 ;;
         53) run 50_switch_mysql_target.sh server02 ;; 54) run 50_switch_mysql_target.sh server03 ;;
         55) run 55_stop_replication.sh ;;     56) run 56_reinit_replication.sh ;;
