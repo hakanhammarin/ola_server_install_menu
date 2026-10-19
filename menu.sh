@@ -49,7 +49,7 @@ show_menu() {
     echo "  SERVICE"
     echo "   1.  Start  ola10mila service"
     echo "   2.  Stop   ola10mila service"
-    echo "  14.  Switch OLA database: local / server01    [${db_target}]"
+    echo "  14.  Switch OLA database: local / server01 / server02  [${db_target}]"
     echo ""
     echo "  BACKUP"
     echo "   3.  Create database snapshot/backup"
