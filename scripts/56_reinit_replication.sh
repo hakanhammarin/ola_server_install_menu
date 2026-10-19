@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================
 #  Re-initialize replication on the replica (no restore)
-#  Use this to fix typos or reconfigure after option 9.
+#  Use this to fix typos or reconfigure after option 42.
 # ============================================================
 
 CONFIG_FILE="$HOME/.10mila_menu.conf"
@@ -116,7 +116,7 @@ REPL_EXIT=$?
 
 if [ $REPL_EXIT -ne 0 ]; then
     echo "  ERROR: Replication setup failed (exit code $REPL_EXIT)"
-    echo "  Run option 25 to inspect the error."
+    echo "  Run option 62 to inspect the error."
     exit 1
 fi
 

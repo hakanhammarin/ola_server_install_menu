@@ -1,130 +1,98 @@
 #!/bin/bash
 # ============================================================
-#  10mila Operations Menu
-#  Displayed at login — sourced from ~/.bashrc
+#  10mila Operations Menu — displayed at login, sourced from ~/.bashrc
+#  The same number does the same thing on every server (server01, server02, server03, AWS):
+#  1x OLA service   2x backups here   3x send a backup   4x restore   5x database role   6x status
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+S="$SCRIPT_DIR/scripts"
 CONFIG_FILE="$HOME/.10mila_menu.conf"
 
-# Ensure config file exists with defaults
 if [ ! -f "$CONFIG_FILE" ]; then
-    cat > "$CONFIG_FILE" <<'EOF'
-LAST_SOURCEDB=tiomila2025
-LAST_BACKUP_FILE=/home/user/backups/tiomila2025_auto_2026-03-19T200000Z.sql
-BACKUP_DIR=/home/user/backups
-PRIMARY_HOST=192.168.1.21
-SECONDARY_HOST=192.168.1.22
-SECONDARY_USER=user
-SECONDARY_PATH=/home/user/backups
-ONLINE_HOST=10mila.duckdns.org
-ONLINE_USER=ec2-user
-ONLINE_PATH=/home/ec2-user/backups
-PEM_FILE=/home/user/.ssh/10mila2026.pem
+    cat > "$CONFIG_FILE" <<CONF
+LAST_SOURCEDB=tiomila2026
+LAST_BACKUP_FILE=
+BACKUP_DIR=$HOME/backups
 DB_USER=root
-EOF
+CONF
 fi
-
 source "$CONFIG_FILE"
 
-timer_status() {
-    if systemctl is-active --quiet "$1" 2>/dev/null; then
-        echo "[ON] "
-    else
-        echo "[off]"
-    fi
-}
+on_off() { systemctl is-active --quiet "$1" 2>/dev/null && echo "[ON] " || echo "[off]"; }
 
 show_menu() {
-    local ab_status ul_status db_target
-    ab_status=$(timer_status 10mila-autobackup.timer)
-    ul_status=$(timer_status 10mila-autoupload-secondary.timer)
-    db_target=$("$SCRIPT_DIR/scripts/14_switch_mysql_target.sh" status 2>/dev/null)
+    local target; target=$(bash "$S/50_switch_mysql_target.sh" status 2>/dev/null)
     clear
     echo "=============================================="
-    echo "   10mila Operations Menu"
-    echo "   $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "   10mila Operations Menu   $(hostname)"
+    echo "   $(date '+%Y-%m-%d %H:%M:%S')    OLA database: ${target}"
     echo "=============================================="
     echo ""
-    echo "  SERVICE"
-    echo "   1.  Start  ola10mila service"
-    echo "   2.  Stop   ola10mila service"
-    echo "  14.  Switch OLA database: local / server01 / server02  [${db_target}]"
+    echo "  OLA SERVICE"
+    echo "  11.  Start OLA                 12.  Stop OLA"
+    echo "  13.  Autostart on              14.  Autostart off"
+    echo "  15.  Service status            16.  Service log (live)"
     echo ""
-    echo "  BACKUP"
-    echo "   3.  Create database snapshot/backup"
-    echo "   4.  Send backup to secondary server"
-    echo "   5.  Send backup to online server"
-    echo "   6.  Enable  auto-backup every 15 min       ${ab_status}"
-    echo "   7.  Disable auto-backup every 15 min"
-    echo "   8.  Restore database from backup"
-    echo "   9.  Restore database and start replication"
+    echo "  BACKUP ON THIS SERVER"
+    echo "  21.  Backup now"
+    echo "  22.  Auto-backup every 15 min on  $(on_off 10mila-autobackup.timer)"
+    echo "  23.  Auto-backup off"
+    echo "  24.  Show last backup"
     echo ""
-    echo "  AUTOSTART"
-    echo "  10.  Enable  autostart for ola10mila"
-    echo "  11.  Disable autostart for ola10mila"
-    echo "  12.  Enable  auto-upload to secondary server ${ul_status}"
-    echo "  13.  Disable auto-upload to secondary server"
+    echo "  SEND LAST BACKUP TO"
+    echo "  31.  server01    32.  server02    33.  server03"
+    echo "  34.  AWS OLA     35.  utility"
+    echo "  36.  Auto-send new backups on  $(on_off 10mila-autopush.timer)"
+    echo "  37.  Auto-send off"
     echo ""
-    echo "  TROUBLESHOOTING"
-    echo "  20.  Show service status"
-    echo "  21.  Show service logs (live)"
-    echo "  22.  Show MySQL status"
-    echo "  23.  Show last backup file"
-    echo "  24.  Edit menu config"
-    echo "  25.  Debug replication status (replica)"
-    echo "  26.  Debug replication status (master/source)"
-    echo "  27.  Re-initialize replication (fix settings, no restore)"
+    echo "  RESTORE ON THIS SERVER (overwrites the database)"
+    echo "  41.  Restore database from a backup"
+    echo "  42.  Restore and start replication from a source"
+    echo ""
+    echo "  DATABASE ROLE"
+    echo "  51.  OLA uses local MySQL      52.  OLA uses server01"
+    echo "  53.  OLA uses server02         54.  OLA uses server03"
+    echo "  55.  Stop replication: this server becomes the primary"
+    echo "  56.  Re-initialize replication (fix settings, no restore)"
+    echo ""
+    echo "  STATUS"
+    echo "  61.  MySQL status   62.  Replica status   63.  Source status"
+    echo "  69.  Edit menu config"
     echo ""
     echo "   0.  Exit to shell"
     echo "----------------------------------------------"
     printf "  Choice: "
 }
 
-run_script() {
-    local script="$SCRIPT_DIR/scripts/$1"
-    if [ -x "$script" ]; then
-        "$script"
-    else
-        echo "ERROR: Script not found or not executable: $script"
-    fi
-}
+run() { local s="$S/$1"; shift; [ -f "$s" ] && bash "$s" "$@" || echo "ERROR: Script not found: $s"; }
 
 while true; do
     show_menu
-    read -r choice
-
+    read -r choice || break
     case "$choice" in
-        1)  run_script "01_start_ola.sh" ;;
-        2)  run_script "02_stop_ola.sh" ;;
-        3)  run_script "03_backup_db.sh" ;;
-        4)  run_script "04_send_backup_secondary.sh" ;;
-        5)  run_script "05_send_backup_online.sh" ;;
-        6)  run_script "06_enable_autobackup.sh" ;;
-        7)  run_script "07_disable_autobackup.sh" ;;
-        8)  run_script "08_restore_db.sh" ;;
-        9)  run_script "09_restore_and_replicate.sh" ;;
-        10) run_script "10_enable_autostart.sh" ;;
-        11) run_script "11_disable_autostart.sh" ;;
-        12) run_script "12_enable_autoupload_secondary.sh" ;;
-        13) run_script "13_disable_autoupload_secondary.sh" ;;
-        14) run_script "14_switch_mysql_target.sh" ;;
-        20) run_script "20_service_status.sh" ;;
-        21) run_script "21_show_logs.sh" ;;
-        22) run_script "22_mysql_status.sh" ;;
-        23) run_script "23_show_last_backup.sh" ;;
-        24) ${EDITOR:-nano} "$CONFIG_FILE" ;;
-        25) run_script "25_debug_replication.sh" ;;
-        26) run_script "26_debug_master_status.sh" ;;
-        27) run_script "27_reinit_replication.sh" ;;
+        11) run 11_start_ola.sh ;;            12) run 12_stop_ola.sh ;;
+        13) run 13_enable_autostart.sh ;;     14) run 14_disable_autostart.sh ;;
+        15) run 15_service_status.sh ;;       16) run 16_show_logs.sh ;;
+        21) run 21_backup_db.sh ;;            22) run 22_enable_autobackup.sh ;;
+        23) run 23_disable_autobackup.sh ;;   24) run 24_show_last_backup.sh ;;
+        31) run 30_send_backup.sh server01 ;; 32) run 30_send_backup.sh server02 ;;
+        33) run 30_send_backup.sh server03 ;; 34) run 30_send_backup.sh aws ;;
+        35) run 30_send_backup.sh util ;;
+        36) run 36_enable_autopush.sh ;;      37) run 37_disable_autopush.sh ;;
+        41) run 41_restore_db.sh ;;           42) run 42_restore_and_replicate.sh ;;
+        51) run 50_switch_mysql_target.sh local ;;    52) run 50_switch_mysql_target.sh server01 ;;
+        53) run 50_switch_mysql_target.sh server02 ;; 54) run 50_switch_mysql_target.sh server03 ;;
+        55) run 55_stop_replication.sh ;;     56) run 56_reinit_replication.sh ;;
+        61) run 61_mysql_status.sh ;;         62) run 62_debug_replication.sh ;;
+        63) run 63_debug_source_status.sh ;;  69) ${EDITOR:-nano} "$CONFIG_FILE" ;;
         0)  echo ""; echo "Exiting to shell."; break ;;
-        "")  ;; # ignore empty input
+        "") ;;
         *)  echo ""; echo "  Unknown option: $choice"; sleep 1 ;;
     esac
-
-    if [ "$choice" != "21" ]; then
+    if [ "$choice" != "16" ]; then
         echo ""
         printf "  Press Enter to return to menu..."
-        read -r
+        read -r || break
     fi
 done

@@ -69,12 +69,10 @@ $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable --now 10mila-autoba
 $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable 10mila-autobackup.service
 $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autobackup.service
 $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autobackup.timer
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable --now 10mila-autoupload-secondary.timer
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable --now 10mila-autoupload-secondary.timer
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable 10mila-autoupload-secondary.service
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autoupload-secondary.service
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autoupload-secondary.timer
-$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/apt-get
+$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable --now 10mila-autopush.timer
+$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable --now 10mila-autopush.timer
+$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autopush.service
+$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/systemd/system/10mila-autopush.timer
 $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/mysqldump
 $CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/mysqladmin
 EOF

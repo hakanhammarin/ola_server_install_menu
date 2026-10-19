@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================
 #  Restore database and start MySQL replication
-#  1. Restore from backup (same as option 8)
+#  1. Restore from backup (same as option 41)
 #  2. Extract binlog position from backup file (CHANGE MASTER TO comment)
 #  3. Prompt for replication source settings (sticky)
 #  4. Configure and start replica
@@ -248,7 +248,7 @@ REPL_EXIT=$?
 if [ $REPL_EXIT -ne 0 ]; then
     echo ""
     echo "  ERROR: Replication setup failed (exit code $REPL_EXIT)"
-    echo "  Check the output above. You can also run option 25 to debug."
+    echo "  Check the output above. You can also run option 62 to debug."
 else
     # ---- Store replication password securely ----
     printf '%s' "$SRC_PASS" > "$REPL_PASS_FILE"

@@ -154,6 +154,6 @@ if [ -n "$ERROR_LOG" ] && [ -f "$ERROR_LOG" ]; then
 fi
 
 echo ""
-echo "  Tip: use option 25 to check the replica side."
+echo "  Tip: use option 62 to check the replica side."
 echo "  Tip: 'journalctl -u mysql' for the full MySQL error log."
 echo ""
