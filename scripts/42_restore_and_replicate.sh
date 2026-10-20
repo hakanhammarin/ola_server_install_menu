@@ -204,6 +204,9 @@ if systemctl is-active --quiet ola10mila 2>/dev/null; then
     sudo systemctl stop ola10mila
 fi
 
+# A replica that still replicates would keep applying its old source's changes into the tables being restored,
+# and the new replication would then apply them a second time (duplicate key). Stop it first.
+mysql -u "$DB_USER_IN" -p"$DB_PASS" -e "STOP REPLICA" 2>/dev/null
 echo ""
 echo "  Restoring $(basename "$BACKUP_FILE") -> $TARGET_DB ..."
 echo "  (this may take a while)"
