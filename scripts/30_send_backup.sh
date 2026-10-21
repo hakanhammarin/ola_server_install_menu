@@ -2,6 +2,7 @@
 # Menu 31-35: send the last backup to another server: server01, server02, server03, aws or util.
 # Uses the backup key (BACKUP_KEY, made at deploy) as the upload-only account BACKUP_USER, into BACKUP_REMOTE_DIR.
 # The other side lets that key do nothing but upload (SFTP), so this works without a password or the admin Mac.
+# The file arrives as "<this server>__<name>": the receiver's housekeeping keeps the newest auto-backups per sender.
 #   30_send_backup.sh <server01|server02|server03|aws|util> [file]
 CONFIG_FILE="$HOME/.10mila_menu.conf"
 source "$CONFIG_FILE"
@@ -26,9 +27,10 @@ if [ -z "$BACKUP_FILE" ]; then
 fi
 [ -f "$BACKUP_FILE" ] || { echo "  ERROR: File not found: $BACKUP_FILE"; exit 1; }
 
+RNAME="$(hostname -s)__$(basename "$BACKUP_FILE")"
 echo ""
 echo "  From : $BACKUP_FILE"
-echo "  To   : $1 ($RUSER@$HOST:$RDIR)"
+echo "  To   : $1 ($RUSER@$HOST:$RDIR/$RNAME)"
 echo ""
 printf "  Proceed? [Y/n]: "
 read -r confirm
@@ -37,7 +39,7 @@ confirm="${confirm:-Y}"
 
 echo ""
 echo "  Transferring..."
-if scp -q -o BatchMode=yes -o ConnectTimeout=10 -i "$KEY" "$BACKUP_FILE" "$RUSER@$HOST:$RDIR/"; then
+if scp -q -o BatchMode=yes -o ConnectTimeout=10 -i "$KEY" "$BACKUP_FILE" "$RUSER@$HOST:$RDIR/$RNAME"; then
     echo "  Transfer SUCCESSFUL"
 else
     echo "  Transfer FAILED (exit code $?)"
