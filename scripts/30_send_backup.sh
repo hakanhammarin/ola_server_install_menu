@@ -2,7 +2,8 @@
 # Menu 31-35: send the last backup to another server: server01, server02, server03, aws or util.
 # Uses the backup key (BACKUP_KEY, made at deploy) as the upload-only account BACKUP_USER, into BACKUP_REMOTE_DIR.
 # The other side lets that key do nothing but upload (SFTP), so this works without a password or the admin Mac.
-# The file arrives as "<this server>__<name>": the receiver's housekeeping keeps the newest auto-backups per sender.
+# The file arrives as "<this server>__<name>" (a file that came from another server keeps that server's name): the
+# receiver's housekeeping keeps the newest auto-backups per sender.
 #   30_send_backup.sh <server01|server02|server03|aws|util> [file]
 CONFIG_FILE="$HOME/.10mila_menu.conf"
 source "$CONFIG_FILE"
@@ -27,7 +28,8 @@ if [ -z "$BACKUP_FILE" ]; then
 fi
 [ -f "$BACKUP_FILE" ] || { echo "  ERROR: File not found: $BACKUP_FILE"; exit 1; }
 
-RNAME="$(hostname -s)__$(basename "$BACKUP_FILE")"
+RNAME="$(basename "$BACKUP_FILE")"
+case "$RNAME" in *__*) ;; *) RNAME="$(hostname -s)__$RNAME" ;; esac   # a file passed on keeps its first sender's name
 echo ""
 echo "  From : $BACKUP_FILE"
 echo "  To   : $1 ($RUSER@$HOST:$RDIR/$RNAME)"
