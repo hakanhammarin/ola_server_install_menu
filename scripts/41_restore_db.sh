@@ -141,6 +141,12 @@ EXIT_CODE=$?
 echo ""
 if [ $EXIT_CODE -eq 0 ]; then
     echo "  Restore SUCCESSFUL: '$TARGET_DB' restored from $(basename "$BACKUP_FILE")"
+    # Other services put idempotent SQL for their own tables and grants here (teamchanges: zz_teamchanges); a restored
+    # database does not have them, so they are applied right after every restore.
+    for h in "${AFTER_RESTORE_DIR:-/etc/10mila-menu/after-restore.d}"/*.sql; do
+        [ -f "$h" ] || continue
+        if mysql -u "$DB_USER" -p"$DB_PASS" "$TARGET_DB" < "$h"; then echo "  after restore: $(basename "$h") applied"; else echo "  after restore: $(basename "$h") FAILED"; EXIT_CODE=1; fi
+    done
     sed -i "s|^DB_USER=.*|DB_USER=$DB_USER|" "$CONFIG_FILE"
 else
     echo "  Restore FAILED (exit code $EXIT_CODE)"

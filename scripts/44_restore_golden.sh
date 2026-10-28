@@ -53,6 +53,12 @@ mysql_q -e "DROP DATABASE IF EXISTS \`$DB\`; CREATE DATABASE \`$DB\`;" && mysql_
 rc=$?
 if [ $rc -eq 0 ]; then
     echo "  Golden restore SUCCESSFUL: $DB from $(basename "$FILE")"
+    # Other services put idempotent SQL for their own tables and grants here (teamchanges: zz_teamchanges); a restored
+    # database does not have them, so they are applied right after every restore.
+    for h in "${AFTER_RESTORE_DIR:-/etc/10mila-menu/after-restore.d}"/*.sql; do
+        [ -f "$h" ] || continue
+        if mysql_q "$DB" < "$h"; then echo "  after restore: $(basename "$h") applied"; else echo "  after restore: $(basename "$h") FAILED"; rc=1; fi
+    done
     sed -i "s|^LAST_SOURCEDB=.*|LAST_SOURCEDB=$DB|" "$CONFIG_FILE"
     echo "$(date '+%Y-%m-%d %H:%M') from $(basename "$FILE")" > "$LOCK" && chmod 660 "$LOCK"
     rm -f "$FILE"
