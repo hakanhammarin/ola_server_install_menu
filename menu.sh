@@ -3,6 +3,7 @@
 #  10mila Operations Menu — displayed at login, sourced from ~/.bashrc
 #  The same number does the same thing on every server (server01, server02, server03, AWS):
 #  1x OLA service   2x backups here   3x send a backup   4x restore   5x database role   6x status
+#  7x chase start (wave start; the StarterClock start lists are on the web page)
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,6 +63,9 @@ show_menu() {
     echo "  61.  MySQL status   62.  Replica status   63.  Source status"
     echo "  69.  Edit menu config"
     echo ""
+    echo "  CHASE START (on the primary; start lists for StarterClock: web page :8096)"
+    echo "  71.  Wave start Herrkavlen     72.  Wave start Damkavlen"
+    echo ""
     echo "   0.  Exit to shell"
     echo "----------------------------------------------"
     printf "  Choice: "
@@ -90,6 +94,7 @@ while true; do
         55) run 55_stop_replication.sh ;;     56) run 56_reinit_replication.sh ;;
         61) run 61_mysql_status.sh ;;         62) run 62_debug_replication.sh ;;
         63) run 63_debug_source_status.sh ;;  69) ${EDITOR:-nano} "$CONFIG_FILE" ;;
+        71) run 71_wave_start.sh herr ;;      72) run 71_wave_start.sh dam ;;
         0)  echo ""; echo "Exiting to shell."; break ;;
         "") ;;
         *)  echo ""; echo "  Unknown option: $choice"; sleep 1 ;;
